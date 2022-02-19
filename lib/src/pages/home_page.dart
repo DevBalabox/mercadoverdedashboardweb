@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_verde/model/admin_model.dart';
+import 'package:web_verde/src/pages/announcements_page.dart';
 import 'package:web_verde/src/pages/category_page.dart';
 import 'package:web_verde/src/pages/client_page.dart';
+import 'package:web_verde/src/pages/create_announcement.dart';
 import 'package:web_verde/src/pages/servicio_page.dart';
 import 'package:web_verde/src/pages/vendedor_page.dart';
 import 'package:web_verde/src/service/sharedPref.dart';
@@ -375,6 +377,32 @@ class _HomePageState extends State<HomePage> {
               initRuta = null;
               pageSelect = CategoryPage();
               pageTitle = 'Categorías';
+            });
+          },
+        ),
+      ),
+      Tooltip(
+        message: 'Anuncios',
+        child: IconButton(
+          icon: Icon(Icons.volume_up, color: Colors.white),
+          onPressed: () {
+            setState(() {
+              initRuta = null;
+              pageSelect = AnnouncementsPage();
+              pageTitle = 'Anuncios';
+            });
+          },
+        ),
+      ),
+      Tooltip(
+        message: 'Anuncios',
+        child: IconButton(
+          icon: Icon(Icons.volume_up, color: Colors.white),
+          onPressed: () {
+            setState(() {
+              initRuta = null;
+              pageSelect = CreateAnnouncement();
+              pageTitle = 'crear';
             });
           },
         ),

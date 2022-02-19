@@ -606,14 +606,11 @@ class _DialogInfoState extends State<DialogInfo> {
           jsonVendedor = respResponse[1];
           loadInfo = false;
 
-          nombrePub = jsonVendedor['informacion_publica']['nombre']
-              .toString();
-          descPub = jsonVendedor['informacion_publica']['descripcion']
-              .toString();
-          telPub = jsonVendedor['informacion_publica']['telefono']
-              .toString();
-          correoPub = jsonVendedor['informacion_publica']['correo']
-              .toString();
+          nombrePub = jsonVendedor['informacion_publica']['nombre'].toString();
+          descPub =
+              jsonVendedor['informacion_publica']['descripcion'].toString();
+          telPub = jsonVendedor['informacion_publica']['telefono'].toString();
+          correoPub = jsonVendedor['informacion_publica']['correo'].toString();
           // birthdate =
           //     DateTime.parse(jsonVendedor['fecha_nacimiento'].toString());
           // birthdate_string = Jiffy(jsonVendedor['fecha_nacimiento'].toString())
@@ -956,7 +953,8 @@ class _DialogInfoState extends State<DialogInfo> {
                                           color: primaryGreen.withOpacity(0.4),
                                           thickness: 2,
                                         ),
-                                  jsonVendedor['informacion_publica']['nombre'] ==
+                                  jsonVendedor['informacion_publica']
+                                              ['nombre'] ==
                                           null
                                       ? Container()
                                       : Text(
@@ -978,7 +976,8 @@ class _DialogInfoState extends State<DialogInfo> {
                                                 child: Column(
                                                   children: [
                                                     SimpleTextField(
-                                                        initValue: nombrePub.toString(),
+                                                        initValue: nombrePub
+                                                            .toString(),
                                                         inputType: 'generic',
                                                         enabled: editP,
                                                         onSaved: (value) =>
@@ -987,7 +986,8 @@ class _DialogInfoState extends State<DialogInfo> {
                                                             TextCapitalization
                                                                 .sentences),
                                                     SimpleTextField(
-                                                        initValue: correoPub.toString(),
+                                                        initValue: correoPub
+                                                            .toString(),
                                                         inputType: 'generic',
                                                         enabled: editP,
                                                         onSaved: (value) =>
@@ -996,7 +996,8 @@ class _DialogInfoState extends State<DialogInfo> {
                                                             TextCapitalization
                                                                 .sentences),
                                                     SimpleTextField(
-                                                        initValue: telPub.toString(),
+                                                        initValue:
+                                                            telPub.toString(),
                                                         inputType: 'generic',
                                                         enabled: editP,
                                                         onSaved: (value) =>
@@ -1015,7 +1016,8 @@ class _DialogInfoState extends State<DialogInfo> {
                                                 child: Column(
                                                   children: [
                                                     SimpleTextField(
-                                                        initValue: descPub.toString(),
+                                                        initValue:
+                                                            descPub.toString(),
                                                         inputType: 'generic',
                                                         enabled: editP,
                                                         onSaved: (value) =>
