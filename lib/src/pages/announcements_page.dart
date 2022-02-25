@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:web_verde/model/admin_model.dart';
 import 'package:web_verde/src/service/sharedPref.dart';
 import 'package:web_verde/src/service/verde_service.dart';
@@ -12,7 +13,7 @@ import 'package:web_verde/src/widgets/input_widget.dart';
 class AnunciosModel {
   AnunciosModel(
     this.active,
-    this.productos_id,
+    this.producto_id,
     this.imagen,
     this.anuncio_id,
     this.fechas,
@@ -20,7 +21,7 @@ class AnunciosModel {
     this.nombre_producto,
   );
   final String active;
-  final String productos_id;
+  final String producto_id;
   final String imagen;
   final String anuncio_id;
   final String fechas;
@@ -60,8 +61,9 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
 
 //Funcion para obtener anuncios
   getAnuncios() async {
-    await verdeService.postTokenServiceMock({"anuncio_id": "string"},
-        "enlistar/anuncios-admin", sharedPrefs.clientToken).then((serverResp) {
+    await verdeService
+        .getService('adminModel', "enlistar/anuncios", sharedPrefs.clientToken)
+        .then((serverResp) {
       if (serverResp['status'] == 'server_true') {
         var respAnuncios = jsonDecode(serverResp['response']);
         //anuncios = respAnuncios[1];
@@ -74,7 +76,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
           for (var i = 0; i < jsonAnuncios.length; i++) {
             anuncios.add(AnunciosModel(
               jsonAnuncios[i]['active'].toString(),
-              jsonAnuncios[i]['productos_id'].toString(),
+              jsonAnuncios[i]['producto_id'].toString(),
               jsonAnuncios[i]['imagen'].toString(),
               jsonAnuncios[i]['anuncio_id'].toString(),
               jsonAnuncios[i]['fechas'].toString(),
@@ -320,7 +322,7 @@ class AnunciosDataSourceTable extends DataTableSource {
                   borderRadius: BorderRadius.circular(18.0),
                 ))),
                 onPressed: () {
-                  _detallesDialogCall(_context, _anuncio.productos_id);
+                  _detallesDialogCall(_context, _anuncio.anuncio_id, _anuncio);
                 },
                 child: Center(
                   child: Container(
@@ -344,7 +346,7 @@ class AnunciosDataSourceTable extends DataTableSource {
                   borderRadius: BorderRadius.circular(18.0),
                 ))),
                 onPressed: () {
-                  _dialogCall(_context, _anuncio.productos_id);
+                  _dialogCall(_context, _anuncio.anuncio_id);
                 },
                 child: Center(
                   child: Container(
@@ -378,12 +380,13 @@ Future _dialogCall(BuildContext context, idAnuncio) {
       });
 }
 
-Future _detallesDialogCall(BuildContext context, idAnuncio) {
+Future _detallesDialogCall(BuildContext context, idAnuncio, infoAnuncio) {
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         print(idAnuncio);
-        return DetallesDialog(idAnuncio: idAnuncio); //MyDialog();
+        return DetallesDialog(
+            idAnuncio: idAnuncio, infoAnuncio: infoAnuncio); //MyDialog();
       });
 }
 
@@ -403,9 +406,11 @@ void searchOperation(String searchText) {
 }
 
 class DetallesDialog extends StatefulWidget {
-  DetallesDialog({Key key, @required this.idAnuncio}) : super(key: key);
+  DetallesDialog(
+      {Key key, @required this.idAnuncio, @required this.infoAnuncio})
+      : super(key: key);
   final String idAnuncio;
-  //final dinamyc idAnuncio;
+  final dynamic infoAnuncio;
 
   @override
   State<DetallesDialog> createState() => _DetallesDialogState();
@@ -424,19 +429,31 @@ class _DetallesDialogState extends State<DetallesDialog> {
   Image pickedImage;
   var base64image;
 
+  @override
+  void initState() {
+    getAnuncioDetalles();
+    super.initState();
+  }
+
   getAnuncioDetalles() async {
-    await verdeService
-        .getService(null, 'categorias/productos?categoria=${widget.idAnuncio}',
-            sharedPrefs.clientToken)
-        .then((serverResp) {
+    sharedPrefs.init();
+    await verdeService.postTokenService({"anuncio_id": widget.idAnuncio},
+        'detalles/anuncio', sharedPrefs.clientToken).then((serverResp) {
+      print(serverResp);
       if (serverResp['status'] == 'server_true') {
         var respResponse = jsonDecode(serverResp['response']);
-        // print(respResponse[1]);
+        print(respResponse[1]);
         setState(() {
-          anunciosDetalles = respResponse[1];
+          anunciosDetalles = respResponse[1][0];
+          print(anunciosDetalles);
         });
       }
     });
+  }
+
+  pickImage() async {
+    mediaData = await ImagePickerWeb.getImageInfo;
+    // print(pickedImage);
   }
 
   @override
@@ -449,7 +466,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
               children: [
                 Flexible(
                   child: Text(
-                    'Anuncio #123',
+                    widget.infoAnuncio.anuncio_id,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.black87),
                     textAlign: TextAlign.center,
@@ -479,42 +496,13 @@ class _DetallesDialogState extends State<DetallesDialog> {
                   children: <Widget>[
                     Column(
                       children: [
-                        Container(
-                          child: CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey[400],
-                              backgroundImage: NetworkImage(
-                                  'https://merkadoverdeapp.com/wp-content/uploads/2021/01/cover-2.jpg')
-                              //mediaData != null
-                              // MemoryImage(mediaData.data)
-                              //? MemoryImage(mediaData.data)
-                              //: NetworkImage(
-                              //    widget.categoryInfo.img_url == null
-                              //        ? ""
-                              //        : widget.categoryInfo.img_url),
-                              ),
-                        ),
-//                        !editP
-//                            ? Container()
-//                            : Padding(
-//                                padding: const EdgeInsets.only(top: 5.0),
-//                                child: Padding(
-//                                  padding: const EdgeInsets.only(top: 5.0),
-//                                  child: ButtonLight(
-//                                      mainText: 'Seleccionar foto',
-//                                      pressed: () async {
-//                                        //await pickImage();
-//                                        //setState(() {});
-//                                      }),
-//                                ),
-//                              ),
                         Form(
                           //key: _formKey,
                           child: SimpleTextField(
                               labelText: 'Nombre',
-                              initValue: 'Nombre', //widget.categoryInfo.nombre,
+                              initValue: widget.infoAnuncio.nombre_producto,
                               inputType: 'generic',
-                              enabled: editP,
+                              enabled: false,
                               onSaved: (value) =>
                                   {}, //(value) => nombrecat = value,
                               textCapitalization: TextCapitalization.sentences),
@@ -526,8 +514,8 @@ class _DetallesDialogState extends State<DetallesDialog> {
                             //key: _formKey,
                             child: SimpleTextField(
                                 labelText: 'Nombre del vendedor/tienda',
-                                initValue:
-                                    'Roberto González', //widget.categoryInfo.nombre,
+                                initValue: widget.infoAnuncio
+                                    .nombre_vendedor, //widget.categoryInfo.nombre,
                                 inputType: 'generic',
                                 enabled: editP,
                                 onSaved: (value) =>
@@ -559,8 +547,8 @@ class _DetallesDialogState extends State<DetallesDialog> {
                           //key: _formKey,
                           child: SimpleTextField(
                               labelText: 'Fechas',
-                              initValue:
-                                  '1 de Febrero, 1 de Marzo', //widget.categoryInfo.nombre,
+                              initValue: widget.infoAnuncio.fechas
+                                  .toString(), //widget.categoryInfo.nombre,
                               inputType: 'generic',
                               enabled: editP,
                               onSaved: (value) =>
@@ -570,18 +558,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
 //                        widget.categoryInfo.estado == 'inactiva'
 //                            ? Container()
 //                            : SizedBox(height: 20),
-                        Container(
-                            child: Form(
-                          //key: _formKey,
-                          child: SimpleTextField(
-                              labelText: 'Posicion unica',
-                              initValue: '1', //widget.categoryInfo.nombre,
-                              inputType: 'generic',
-                              enabled: editP,
-                              onSaved: (value) =>
-                                  {}, //(value) => nombrecat = value,
-                              textCapitalization: TextCapitalization.sentences),
-                        )),
+
 //                        widget.categoryInfo.estado == 'inactiva'
 //                            ? Container()
 //                            : ButtonLight(
@@ -593,13 +570,59 @@ class _DetallesDialogState extends State<DetallesDialog> {
 //                                              infoCat: widget.categoryInfo,
 //                                            )))),
                         SizedBox(height: 20),
+
+                        Container(
+                            width: 310.00,
+                            height: 152.00,
+                            decoration: new BoxDecoration(
+                              image: new DecorationImage(
+                                image: NetworkImage(widget.infoAnuncio.imagen),
+                                fit: BoxFit.fitHeight,
+                              ),
+                            )
+
+                            /*  child:  CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey[400],
+                              backgroundImage:
+                                  NetworkImage(widget.infoAnuncio.imagen)
+                              //mediaData != null
+                              // MemoryImage(mediaData.data)
+                              //? MemoryImage(mediaData.data)
+                              //: NetworkImage(
+                              //    widget.categoryInfo.img_url == null
+                              //        ? ""
+                              //        : widget.categoryInfo.img_url),
+                              ), */
+                            ),
+                        SizedBox(height: 20),
+                        !editP
+                            ? Container()
+                            : Padding(
+                                padding: const EdgeInsets.only(top: 5.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 5.0),
+                                  child: ButtonLight(
+                                      mainText: 'Seleccionar foto',
+                                      pressed: () async {
+                                        await pickImage();
+                                        setState(() {});
+                                      }),
+                                ),
+                              ),
+                        SizedBox(height: 20),
                         Row(
                           children: [
                             Expanded(
                               child: ButtonPrimary(
                                 mainText: 'Editar',
-                                pressed: () {},
-                              ), /* => _showDesDialog(true) */
+                                pressed: () {
+                                  print(editP);
+                                  setState(() {
+                                    editP = true;
+                                  });
+                                },
+                              ),
 
 //                              child:
 //                              widget.categoryInfo.estado == 'inactiva'
@@ -623,7 +646,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
 //                              ),
 //                            )
                           ],
-                        )
+                        ),
                       ],
                     )
                   ],

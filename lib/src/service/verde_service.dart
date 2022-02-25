@@ -12,6 +12,7 @@ class VerdeService {
   Future<dynamic> getService(dynamic model, String ruta, String token) async {
     String requestStatus = "local_false";
     String requestResponse = "Hubo un error local para procesar la petición";
+    print(urlApi + ruta);
     final response = await client.get(
       '$urlApi$ruta',
       headers: {
@@ -63,7 +64,7 @@ class VerdeService {
           'Content-Type': 'application/json',
         },
         body: jsonEncode(model.toJson()));
-
+    print(urlApi + ruta);
     var jsonResponse = jsonDecode(response.body);
     String status;
     String message;
@@ -98,6 +99,7 @@ class VerdeService {
       dynamic model, String ruta, String token) async {
     String requestStatus = "local_false";
     String requestResponse = "Hubo un error local para procesar la petición";
+    print(urlApi + ruta);
     final response = await client.post('$urlApi$ruta',
         headers: {
           'Content-Type': 'application/json',
