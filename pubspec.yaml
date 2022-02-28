@@ -37,6 +37,8 @@ dependencies:
   get: ^3.24.0
   oktoast: ^2.3.2
   jiffy: ^3.0.1
+  date_time_picker: ^1.0.0
+  dotted_border: ^2.0.0+2
 
 
 dev_dependencies:
