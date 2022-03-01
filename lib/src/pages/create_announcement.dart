@@ -183,7 +183,8 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                 return IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.grey),
                   onPressed: () {
-                    Scaffold.of(context).openDrawer();
+                    //Scaffold.of(context).openDrawer();
+                    Navigator.pop(context);
                   },
                   tooltip:
                       MaterialLocalizations.of(context).openAppDrawerTooltip,
@@ -322,7 +323,9 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                       RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18.0),
                               ))),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                               child: Center(
                                 child: Container(
                                   child: Text('Detalles',

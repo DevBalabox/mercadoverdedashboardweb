@@ -394,19 +394,19 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      Tooltip(
-        message: 'Anuncios',
-        child: IconButton(
-          icon: Icon(Icons.volume_up, color: Colors.white),
-          onPressed: () {
-            setState(() {
-              initRuta = null;
-              pageSelect = CreateAnnouncement();
-              pageTitle = 'crear';
-            });
-          },
-        ),
-      ),
+//      Tooltip(
+//        message: 'Anuncios',
+//        child: IconButton(
+//          icon: Icon(Icons.volume_up, color: Colors.white),
+//          onPressed: () {
+//            setState(() {
+//              initRuta = null;
+//              pageSelect = CreateAnnouncement();
+//              pageTitle = 'crear';
+//            });
+//          },
+//        ),
+//      ),
     ]);
   }
 

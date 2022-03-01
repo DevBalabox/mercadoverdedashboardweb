@@ -4,11 +4,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:web_verde/model/admin_model.dart';
+import 'package:web_verde/src/global.dart';
+import 'package:web_verde/src/pages/create_announcement.dart';
+import 'package:web_verde/src/pages/home_page.dart';
 import 'package:web_verde/src/service/sharedPref.dart';
 import 'package:web_verde/src/service/verde_service.dart';
 import 'package:web_verde/src/utils/theme.dart';
 import 'package:web_verde/src/widgets/button_widget.dart';
 import 'package:web_verde/src/widgets/input_widget.dart';
+import 'package:date_time_picker/date_time_picker.dart';
 
 class AnunciosModel {
   AnunciosModel(
@@ -149,6 +153,32 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                                       fontSize: 25),
                                 ),
                               ),
+                        Container(
+                            child: Tooltip(
+                          message: 'Agregar nuevo anuncio',
+                          child: Container(
+                            padding: EdgeInsets.all(0),
+                            decoration: BoxDecoration(
+                                color: primaryGreen,
+                                borderRadius: BorderRadius.circular(50)),
+                            child: IconButton(
+                                onPressed: () {
+//                                  MaterialPageRoute(
+//                                      builder: (context) =>
+//                                          CreateAnnouncement());
+
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CreateAnnouncement()));
+                                },
+                                icon: Icon(Icons.add, color: Colors.white)),
+                          ),
+                        )),
+                        SizedBox(
+                          width: 30,
+                        ),
                         Expanded(
                           flex: 4,
                           child: RoundTextField(
@@ -169,14 +199,6 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                       ],
                     ),
                     showCheckboxColumn: false,
-                    actions: [
-                      IconButton(
-                          icon: Icon(
-                            Icons.add,
-                            color: primaryGreen,
-                          ),
-                          onPressed: () {} /* () => _dialogCall(context) */)
-                    ],
                     columns: kTableColumns,
                     source: AnunciosDataSourceTable(
                       dataAnuncios: anuncios,
@@ -259,12 +281,12 @@ const kTableColumns = <DataColumn>[
       style: TextStyle(fontWeight: FontWeight.w900),
     ),
   ),
-  DataColumn(
-    label: Text(
-      'Editar',
-      style: TextStyle(fontWeight: FontWeight.w900),
-    ),
-  ),
+//  DataColumn(
+//    label: Text(
+//      'Editar',
+//      style: TextStyle(fontWeight: FontWeight.w900),
+//    ),
+//  ),
 ];
 
 class AnunciosDataSourceTable extends DataTableSource {
@@ -335,29 +357,29 @@ class AnunciosDataSourceTable extends DataTableSource {
                 )),
           )),
 
-          DataCell(Container(
-            color: Color(0xFF70BB68),
-            width: 92,
-            height: 32,
-            child: TextButton(
-                style: ButtonStyle(
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
-                ))),
-                onPressed: () {
-                  _dialogCall(_context, _anuncio.anuncio_id);
-                },
-                child: Center(
-                  child: Container(
-                    child: Text('Editar',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                )),
-          )),
+//          DataCell(Container(
+//            color: Color(0xFF70BB68),
+//            width: 92,
+//            height: 32,
+//            child: TextButton(
+//                style: ButtonStyle(
+//                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+//                        RoundedRectangleBorder(
+//                  borderRadius: BorderRadius.circular(18.0),
+//                ))),
+//                onPressed: () {
+//                  _dialogCall(_context, _anuncio.anuncio_id);
+//                },
+//                child: Center(
+//                  child: Container(
+//                    child: Text('Editar',
+//                        style: TextStyle(
+//                            color: Colors.white,
+//                            fontSize: 13,
+//                            fontWeight: FontWeight.bold)),
+//                  ),
+//                )),
+//          )),
 
           //DataCell(Text('$_anuncio.')),
         ]);
@@ -429,6 +451,11 @@ class _DetallesDialogState extends State<DetallesDialog> {
   Image pickedImage;
   var base64image;
 
+  //Fechas
+  bool fechasAgregadas = false;
+  List<String> listaFechas = [];
+  List<Widget> addFechas = [];
+
   @override
   void initState() {
     getAnuncioDetalles();
@@ -454,6 +481,70 @@ class _DetallesDialogState extends State<DetallesDialog> {
   pickImage() async {
     mediaData = await ImagePickerWeb.getImageInfo;
     // print(pickedImage);
+  }
+
+  void _addDatedWidget() {
+    setState(() {
+      addFechas.add(_datePickerForm());
+    });
+  }
+
+  Widget _datePickerForm() {
+    return Container(
+      child: DateTimePicker(
+        initialValue: '',
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+        dateLabelText: 'Fecha',
+        onChanged: (val) {
+          fechasAgregadas = true;
+          print(val);
+          listaFechas.add(val);
+          print(listaFechas);
+        },
+        validator: (val) {
+          print(val);
+          return null;
+        },
+        onSaved: (val) {
+          print(val);
+          print(val.runtimeType);
+        },
+      ),
+    );
+  }
+
+  postEditAnuncio(idAnuncio) async {
+    VerdeService verdeService = VerdeService();
+
+    var jsonBody = {
+      "imagen": mediaData == null ? null : base64Encode(mediaData.data),
+      "anuncio_id": idAnuncio,
+      "fechas": [],
+    };
+
+    //print(jsonBody);
+
+    await verdeService
+        .postTokenService(jsonBody, 'editar/anuncio', sharedPrefs.clientToken)
+        .then((serverResp) {
+      var respResponse = jsonDecode(serverResp['response']);
+      // dialog(false, context, respResponse['message'].toString());
+      if (serverResp['status'] == 'server_true') {
+        setState(() {
+          editP = false;
+        });
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    HomePage(rutaSeleccionada: AnnouncementsPage())),
+            (route) => false);
+        dialog(true, context, respResponse['message'].toString());
+      } else {
+        dialog(false, context, respResponse['message'].toString());
+      }
+    });
   }
 
   @override
@@ -547,14 +638,72 @@ class _DetallesDialogState extends State<DetallesDialog> {
                           //key: _formKey,
                           child: SimpleTextField(
                               labelText: 'Fechas',
-                              initValue: widget.infoAnuncio.fechas
-                                  .toString(), //widget.categoryInfo.nombre,
+                              initValue: fechasAgregadas
+                                  ? listaFechas.toString()
+                                  : widget.infoAnuncio.fechas
+                                      .toString(), //widget.categoryInfo.nombre,
                               inputType: 'generic',
                               enabled: editP,
-                              onSaved: (value) =>
-                                  {}, //(value) => nombrecat = value,
+                              onSaved: (value) => {
+                                    listaFechas.add(value)
+                                  }, //(value) => nombrecat = value,
                               textCapitalization: TextCapitalization.sentences),
                         )),
+                        SizedBox(
+                          height: 30,
+                        ),
+                        DateTimePicker(
+                          initialValue: '',
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          dateLabelText: 'Fecha Seleccionada',
+                          onChanged: (val) {
+                            fechasAgregadas = true;
+                            listaFechas.add(val);
+                            print(val);
+                            print(listaFechas);
+                          },
+                          validator: (val) {
+                            print(val);
+                            return null;
+                          },
+                          onSaved: (val) => print(val),
+                        ),
+                        Container(
+                            color: Color(0xFF70BB68),
+                            width: 506,
+                            height: 48,
+                            child: TextButton(
+                              style: ButtonStyle(
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                              onPressed: () {
+                                DateTimePicker(
+                                  initialValue: '',
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
+                                  dateLabelText: 'Date',
+                                  onChanged: (val) => print(val),
+                                  validator: (val) {
+                                    print(val);
+                                    return null;
+                                  },
+                                  onSaved: (val) => print(val),
+                                );
+                              },
+                              child: Center(
+                                  child: Container(
+                                      //child: Icon(Icons.add, color: Colors.white),
+                                      child: Text('Asignar fechas',
+                                          style:
+                                              TextStyle(color: Colors.white)))),
+                            )),
+                        SizedBox(
+                          height: 30,
+                        ),
 //                        widget.categoryInfo.estado == 'inactiva'
 //                            ? Container()
 //                            : SizedBox(height: 20),
@@ -572,29 +721,32 @@ class _DetallesDialogState extends State<DetallesDialog> {
                         SizedBox(height: 20),
 
                         Container(
-                            width: 310.00,
-                            height: 152.00,
-                            decoration: new BoxDecoration(
-                              image: new DecorationImage(
-                                image: NetworkImage(widget.infoAnuncio.imagen),
-                                fit: BoxFit.fitHeight,
-                              ),
-                            )
-
-                            /*  child:  CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey[400],
-                              backgroundImage:
-                                  NetworkImage(widget.infoAnuncio.imagen)
-                              //mediaData != null
-                              // MemoryImage(mediaData.data)
-                              //? MemoryImage(mediaData.data)
-                              //: NetworkImage(
-                              //    widget.categoryInfo.img_url == null
-                              //        ? ""
-                              //        : widget.categoryInfo.img_url),
-                              ), */
+                          width: 310.00,
+                          height: 152.00,
+                          decoration: new BoxDecoration(
+                            image: new DecorationImage(
+                              image: NetworkImage(widget.infoAnuncio.imagen),
+                              fit: BoxFit.fitHeight,
                             ),
+                          ),
+
+                          //child: CircleAvatar(
+                          //radius: 50,
+                          //backgroundColor: Colors.grey[400],
+                          //backgroundImage: mediaData != null
+                          //    ? MemoryImage(mediaData.data)
+                          //    : NetworkImage(widget.infoAnuncio.imagen == null
+                          //        ? ""
+                          //        : widget.infoAnuncio.imagen),
+                          child: Container(
+                              decoration: new BoxDecoration(
+                                  image: new DecorationImage(
+                            image: mediaData != null
+                                ? MemoryImage(mediaData.data)
+                                : NetworkImage(widget.infoAnuncio.imagen),
+                            fit: BoxFit.fitHeight,
+                          ))),
+                        ),
                         SizedBox(height: 20),
                         !editP
                             ? Container()
@@ -614,15 +766,23 @@ class _DetallesDialogState extends State<DetallesDialog> {
                         Row(
                           children: [
                             Expanded(
-                              child: ButtonPrimary(
-                                mainText: 'Editar',
-                                pressed: () {
-                                  print(editP);
-                                  setState(() {
-                                    editP = true;
-                                  });
-                                },
-                              ),
+                              child: editP == false
+                                  ? ButtonPrimary(
+                                      mainText: 'Editar',
+                                      pressed: () {
+                                        print(editP);
+                                        setState(() {
+                                          editP = true;
+                                        });
+                                      },
+                                    )
+                                  : ButtonPrimary(
+                                      mainText: 'Guardar',
+                                      pressed: () {
+                                        postEditAnuncio(
+                                            widget.infoAnuncio.anuncio_id);
+                                      },
+                                    ),
 
 //                              child:
 //                              widget.categoryInfo.estado == 'inactiva'
