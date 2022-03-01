@@ -14,6 +14,7 @@ import 'package:web_verde/src/service/verde_service.dart';
 import 'package:web_verde/src/utils/theme.dart';
 import 'package:web_verde/src/widgets/globals_widget.dart';
 import 'package:web_verde/src/widgets/input_widget.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../global.dart';
 
@@ -384,7 +385,11 @@ class _HomePageState extends State<HomePage> {
       Tooltip(
         message: 'Anuncios',
         child: IconButton(
-          icon: Icon(Icons.volume_up, color: Colors.white),
+          icon: FaIcon(
+            FontAwesomeIcons.bullhorn,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () {
             setState(() {
               initRuta = null;
