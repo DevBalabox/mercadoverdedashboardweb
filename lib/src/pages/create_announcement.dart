@@ -41,16 +41,10 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   bool loadInfo = true;
 
   getProductoVendedor() async {
-//    setState(() {
-//      loadProducts = false;
-//      // if (subcategorie.length > 0) {
-//      //   subValue = subcategorie[0];
-//      // }
-//      productsForm = [];
-//    });
     await verdeService
         .getService(
             partnerModel, 'vendedor/productos', sharedPrefs.partnerUserToken)
+        //partnerModel, 'vendedor/productos?usuario_id = ', sharedPrefs.partnerUserToken)
         .then((serverResp) {
       if (serverResp['status'] == 'server_true') {
         var newproducts = jsonDecode(serverResp['response']);
@@ -58,20 +52,20 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
         setState(() {
           loadInfo = false;
         });
-      } else {
-        // setState(() {
-        //   loadPartner = false;
-        //   noProduct = true;
-        // });
-        // var jsonCat = jsonDecode(serverResp['response']);
-        // messageToUser(_scaffoldKey, jsonCat[0]['message']);
-      }
+      } else {}
     });
   }
 
   void _addDatedWidget() {
     setState(() {
       addFechas.add(_datePickerForm());
+    });
+  }
+
+  void _removeDatedWidget() {
+    setState(() {
+      addFechas.removeLast();
+      listaFechas.removeLast();
     });
   }
 
@@ -101,7 +95,6 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
 
   pickImage() async {
     mediaData = await ImagePickerWeb.getImageInfo;
-    // print(pickedImage);
   }
 
   getUser() async {
@@ -255,6 +248,31 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                               )),
                             )),
                         SizedBox(
+                          height: 10,
+                        ),
+                        (addFechas.length > 1)
+                            ? Container(
+                                color: Colors.red,
+                                width: 506,
+                                height: 48,
+                                child: TextButton(
+                                  style: ButtonStyle(
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18.0),
+                                  ))),
+                                  onPressed: () {
+                                    _removeDatedWidget();
+                                  },
+                                  child: Center(
+                                      child: Container(
+                                    child:
+                                        Icon(Icons.remove, color: Colors.white),
+                                  )),
+                                ))
+                            : Container(),
+                        SizedBox(
                           height: 30,
                         ),
                         Container(child: Text('Nombre Vendedor')),
@@ -271,46 +289,85 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                         SizedBox(
                           height: 10,
                         ),
-                        DottedBorder(
-                          color: Colors.black,
-                          strokeWidth: 1,
-                          child: Container(
-                            child: Stack(
-                              alignment: AlignmentDirectional.center,
-                              //mainAxisAlignment: MainAxisAlignment.center,
-                              //crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Container(
-                                    height: 250, color: Color(0XFFFDFDFD)),
-                                Column(
-                                  children: [
-                                    Text('Sube una imagen para tu anuncio',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Color(0xFF515151))),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text('Png y Jpg Horizontal',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Color(0xFF979797))),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Center(
-                                      child: Icon(Icons.photo_library,
-                                          size: 35,
-                                          color: Colors.black.withOpacity(0.5)),
-                                    ),
-                                  ],
+                        (mediaData != null)
+                            ? Container(
+                                height: 250,
+                                decoration: new BoxDecoration(
+                                    image: new DecorationImage(
+                                  image: MemoryImage(mediaData.data),
+                                  fit: BoxFit.fitHeight,
+                                )))
+                            : DottedBorder(
+                                color: Colors.black,
+                                strokeWidth: 1,
+                                child: Container(
+                                  child: Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    //mainAxisAlignment: MainAxisAlignment.center,
+                                    //crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Container(
+                                          height: 250,
+                                          color: Color(0XFFFDFDFD)),
+                                      Column(
+                                        children: [
+                                          Text(
+                                              'Sube una imagen para tu anuncio',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  color: Color(0xFF515151))),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text('Png y Jpg Horizontal',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  color: Color(0xFF979797))),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Center(
+                                            child: Icon(Icons.photo_library,
+                                                size: 35,
+                                                color: Colors.black
+                                                    .withOpacity(0.5)),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
+                              ),
                         SizedBox(
                           height: 30,
+                        ),
+                        Container(
+                          color: Color(0xFF70BB68),
+                          width: 506,
+                          height: 48,
+                          child: TextButton(
+                              style: ButtonStyle(
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                              onPressed: () async {
+                                await pickImage();
+                                setState(() {});
+                              },
+                              child: Center(
+                                child: Container(
+                                  child: Text('Subir Imagen',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              )),
+                        ),
+                        SizedBox(
+                          height: 10,
                         ),
                         Container(
                           color: Color(0xFF70BB68),
@@ -328,7 +385,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                               },
                               child: Center(
                                 child: Container(
-                                  child: Text('Detalles',
+                                  child: Text('Crear Anuncio',
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 13,
