@@ -286,7 +286,7 @@ class AnunciosDataSourceTable extends DataTableSource {
       "anuncio_id": idAnuncio,
     };
     await verdeService
-        .postTokenService(jsonBody, 'editar/anuncio', sharedPrefs.clientToken)
+        .postTokenService(jsonBody, 'eliminar/anuncio', sharedPrefs.clientToken)
         .then((serverResp) {
       print(jsonBody);
       var respResponse = jsonDecode(serverResp['response']);
@@ -582,6 +582,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
   }
 
   postEliminarAnuncio(idAnuncio) async {
+    print(idAnuncio);
     var jsonBody = {
       "anuncio_id": idAnuncio,
     };

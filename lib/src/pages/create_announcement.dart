@@ -32,6 +32,74 @@ class ProductoInfo {
   final String subcategoria_id;
 }
 
+class UsuariosVendedor {
+  UsuariosVendedor(
+    this.nombre,
+    this.primer_apellido,
+    this.segundo_apellido,
+    this.correo,
+    this.telefono,
+    this.ubicacion,
+    this.img_url,
+    this.usuario_id,
+    this.created_at,
+    this.updated_at,
+    this.deleted_a,
+  );
+  final String nombre;
+  final String primer_apellido;
+  final String segundo_apellido;
+  final String correo;
+  final String telefono;
+  final String ubicacion;
+  final String img_url;
+  final String usuario_id;
+  final String created_at;
+  final String updated_at;
+  final String deleted_a;
+
+  @override
+  String toString() {
+    return '$nombre, $primer_apellido , $segundo_apellido, $segundo_apellido, $correo, $telefono, $ubicacion, $img_url, $usuario_id, $created_at, $updated_at, $deleted_a';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is UsuariosVendedor &&
+        other.nombre == nombre &&
+        other.primer_apellido == primer_apellido &&
+        other.segundo_apellido == segundo_apellido &&
+        other.correo == correo &&
+        other.telefono == telefono &&
+        other.ubicacion == ubicacion &&
+        other.img_url == img_url &&
+        other.usuario_id == usuario_id &&
+        other.created_at == created_at &&
+        other.updated_at == updated_at &&
+        other.deleted_a == deleted_a;
+  }
+
+  @override
+  int get hashCode => hashValues(
+      nombre,
+      primer_apellido,
+      segundo_apellido,
+      segundo_apellido,
+      correo,
+      telefono,
+      ubicacion,
+      img_url,
+      usuario_id,
+      created_at,
+      updated_at,
+      deleted_a);
+}
+
+//Clase  Personas
+
 class CreateAnnouncement extends StatefulWidget {
   CreateAnnouncement({Key key}) : super(key: key);
 
@@ -46,6 +114,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
 
   var jsonVendedor;
   List<Partner> userData = [];
+  List<UsuariosVendedor> vendedorData = [];
   List<Partner> searchList = [];
   List<String> vendedors = [];
   List<String> idvendedors = [];
@@ -140,7 +209,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
         .then((serverResp) {
       if (serverResp['status'].toString() == 'server_true') {
         var respResponse = jsonDecode(serverResp['response'].toString());
-        print(respResponse[1]);
+        //print(respResponse[1]);
         setState(() {
           jsonVendedor = respResponse[1];
         });
@@ -160,12 +229,12 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
       "fechas": listaFechas
     };
 
-    print(jsonBody['imagenes']);
-    print(jsonBody['producto_id']);
-    print(jsonBody['fechas']);
+    //print(jsonBody['imagenes']);
+    //print(jsonBody['producto_id']);
+    //print(jsonBody['fechas']);
 
-    var json = jsonEncode(jsonBody);
-    print(json);
+    //var json = jsonEncode(jsonBody);
+    //print(json);
 
     await verdeService
         .postTokenService(jsonBody, "crear/anuncio", sharedPrefs.clientToken)
@@ -197,7 +266,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
       for (var i = 0; i < jsonVendedor.length; i++) {
         // print(jsonVendedor[i]['nombre'].toString());
         // print('----------------');
-        userData.add(Partner(
+        vendedorData.add(UsuariosVendedor(
             jsonVendedor[i]['nombre'].toString(),
             jsonVendedor[i]['primer_apellido'].toString(),
             jsonVendedor[i]['segundo_apellido'].toString(),
@@ -210,16 +279,10 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
             jsonVendedor[i]['updated_at'].toString(),
             jsonVendedor[i]['deleted_at']));
 
-        vendedors.add((jsonVendedor[i]['nombre'] +
-            ' ' +
-            (jsonVendedor[i]['primer_apellido']) +
-            ' ' +
-            (jsonVendedor[i]['segundo_apellido']).toString()));
+        vendedors.add((jsonVendedor[i]['nombre']).toString());
       }
-      String _displayStringForOption(Partner option) => option.nombre;
-      // getProductos();
-      //print(userData.toList());
-      print(vendedors);
+      print(vendedorData[1].nombre);
+      //String _displayStringForOption(Partner option) => option.nombre;
       setState(() {
         loadInfo = false;
       });
@@ -385,21 +448,27 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                         ///////////////////////////////////7
                         StatefulBuilder(
                           builder: (BuildContext context, setState) {
-                            String _displayStringForOption(Partner option) =>
+                            String _displayStringForOption(
+                                    UsuariosVendedor option) =>
                                 option.nombre;
-                            return Autocomplete<Partner>(
+                            print('option.nombre');
+                            //print();
+                            return Autocomplete<UsuariosVendedor>(
                               displayStringForOption: _displayStringForOption,
                               optionsBuilder:
                                   (TextEditingValue textEditingValue) {
                                 if (textEditingValue.text == '') {
-                                  return const Iterable<Partner>.empty();
+                                  return const Iterable<
+                                      UsuariosVendedor>.empty();
                                 }
-                                return this.userData.where((Partner option) {
+                                return this
+                                    .vendedorData
+                                    .where((UsuariosVendedor option) {
                                   return option.toString().contains(
                                       textEditingValue.text.toLowerCase());
                                 });
                               },
-                              onSelected: (Partner selection) {
+                              onSelected: (UsuariosVendedor selection) {
                                 debugPrint(
                                     'You just selected $selection.usuario_id');
                                 debugPrint(
@@ -572,7 +641,6 @@ class AutocompleteVendedor extends StatelessWidget {
   final List<String> vendedoresLista;
 
   const AutocompleteVendedor({this.vendedoresLista});
-
   @override
   Widget build(BuildContext context) {
     return Autocomplete<String>(
