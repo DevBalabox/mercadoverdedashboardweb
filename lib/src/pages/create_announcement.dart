@@ -1,16 +1,36 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:web_verde/model/admin_model.dart';
 import 'package:web_verde/model/partner_model.dart';
+import 'package:web_verde/src/global.dart';
+import 'package:web_verde/src/pages/announcements_page.dart';
+import 'package:web_verde/src/pages/home_page.dart';
 import 'package:web_verde/src/pages/vendedor_page.dart';
 import 'package:web_verde/src/service/sharedPref.dart';
 import 'package:web_verde/src/utils/theme.dart';
 import 'package:web_verde/src/service/verde_service.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:web_verde/src/widgets/dropdown_formfield.dart';
+
+////// Data class.s
+class ProductoInfo {
+  ProductoInfo(this.nombre, this.producto_id, this.imagenes, this.descripcion,
+      this.precio, this.categoria_id, this.subcategoria_id);
+  final String nombre;
+  final String producto_id;
+  final dynamic imagenes;
+  final String descripcion;
+  final String precio;
+  final String categoria_id;
+  final String subcategoria_id;
+}
 
 class CreateAnnouncement extends StatefulWidget {
   CreateAnnouncement({Key key}) : super(key: key);
@@ -28,8 +48,17 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   List<Partner> userData = [];
   List<Partner> searchList = [];
   List<String> vendedors = [];
+  List<String> idvendedors = [];
   List<String> listaFechas = [];
   List<Widget> addFechas = [];
+
+  List<dynamic> productsForm = [];
+
+  String idVendedor;
+  bool mostrar;
+  String idProducto;
+  bool imagenCargada = false;
+  var imagesBody;
 
 //Variables Imagenes
   var mediaData;
@@ -39,6 +68,10 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   var base64image;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool loadInfo = true;
+
+//Variables Productos
+  var productosVendedor;
+  List<ProductoInfo> productData = [];
 
   getProductoVendedor() async {
     await verdeService
@@ -107,7 +140,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
         .then((serverResp) {
       if (serverResp['status'].toString() == 'server_true') {
         var respResponse = jsonDecode(serverResp['response'].toString());
-        // print(respResponse[1]);
+        print(respResponse[1]);
         setState(() {
           jsonVendedor = respResponse[1];
         });
@@ -116,20 +149,50 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   }
 
   postAnuncio() async {
-    setState(() {});
     var jsonBody = {
-      "imagenes": mediaData == null ? null : base64Encode(mediaData.data),
-      "producto_id": '', //_myActivity,
+      "imagenes": [
+        {
+          "nombre_archivo": mediaData == null ? null : mediaData.fileName,
+          "img_url": mediaData == null ? null : base64Encode(mediaData.data)
+        }
+      ],
+      "producto_id": idProducto,
       "fechas": listaFechas
     };
+
+    print(jsonBody['imagenes']);
+    print(jsonBody['producto_id']);
+    print(jsonBody['fechas']);
+
     var json = jsonEncode(jsonBody);
     print(json);
+
+    await verdeService
+        .postTokenService(jsonBody, "crear/anuncio", sharedPrefs.clientToken)
+        .then((serverResp) {
+      print('aquí va el jsonbody');
+      print(jsonBody);
+      var respResponse = jsonDecode(serverResp['response']);
+      print(respResponse);
+      if (serverResp['status'] == 'server_true') {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    HomePage(rutaSeleccionada: AnnouncementsPage())),
+            (route) => false);
+        print(respResponse[0]);
+        dialog(true, context, respResponse.toString());
+      } else {
+        dialog(false, context, respResponse.toString());
+      }
+    });
   }
 
   @override
   void initState() {
     print(sharedPrefs.clientToken.toString());
-
+    mostrar = false;
     getUser().then((value) {
       for (var i = 0; i < jsonVendedor.length; i++) {
         // print(jsonVendedor[i]['nombre'].toString());
@@ -153,9 +216,10 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
             ' ' +
             (jsonVendedor[i]['segundo_apellido']).toString()));
       }
-
+      String _displayStringForOption(Partner option) => option.nombre;
+      // getProductos();
       //print(userData.toList());
-      //print(vendedors);
+      print(vendedors);
       setState(() {
         loadInfo = false;
       });
@@ -163,6 +227,45 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
 
     getProductoVendedor();
     super.initState();
+  }
+
+  getProductos(idUsuario) async {
+    sharedPrefs.init();
+    await verdeService
+        .getService(
+            adminModel,
+            //'vendedor/productos?id=${jsonVendedor['usuario_id']}',
+            'vendedor/productos?id=${idUsuario}',
+            sharedPrefs.clientToken)
+        .then((serverResp) {
+      if (serverResp['status'] == 'server_true') {
+        var respResponse = jsonDecode(serverResp['response']);
+        // print(respResponse[1]);
+        setState(() {
+          for (var i = 0; i < respResponse[1].length; i++) {
+            productsForm.add({
+              "nombre": respResponse[1][i]["nombre"],
+              "producto_id": respResponse[1][i]["producto_id"]
+            });
+          }
+          productosVendedor = respResponse[1];
+
+          for (var i = 0; i < productosVendedor.length; i++) {
+            print(productosVendedor[i]['nombre']);
+            productData.add(ProductoInfo(
+              productosVendedor[i]['nombre'],
+              productosVendedor[i]['producto_id'],
+              productosVendedor[i]['imagenes'],
+              productosVendedor[i]['descripcion'],
+              productosVendedor[i]['precio'],
+              productosVendedor[i]['categoria_id'],
+              productosVendedor[i]['subcategoria_id'],
+            ));
+          }
+          print("productData");
+        });
+      }
+    });
   }
 
   @override
@@ -276,15 +379,74 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                           height: 30,
                         ),
                         Container(child: Text('Nombre Vendedor')),
-                        AutocompleteVendedor(
-                          vendedoresLista: vendedors,
+//                        AutocompleteVendedor(
+//                          vendedoresLista: vendedors,
+//                        ),
+                        ///////////////////////////////////7
+                        StatefulBuilder(
+                          builder: (BuildContext context, setState) {
+                            String _displayStringForOption(Partner option) =>
+                                option.nombre;
+                            return Autocomplete<Partner>(
+                              displayStringForOption: _displayStringForOption,
+                              optionsBuilder:
+                                  (TextEditingValue textEditingValue) {
+                                if (textEditingValue.text == '') {
+                                  return const Iterable<Partner>.empty();
+                                }
+                                return this.userData.where((Partner option) {
+                                  return option.toString().contains(
+                                      textEditingValue.text.toLowerCase());
+                                });
+                              },
+                              onSelected: (Partner selection) {
+                                debugPrint(
+                                    'You just selected $selection.usuario_id');
+                                debugPrint(
+                                    'You just selected ${_displayStringForOption(selection)}');
+
+                                print(selection.usuario_id.toString());
+                                print(selection.usuario_id);
+                                setState(() {
+                                  idVendedor = selection.usuario_id;
+                                  mostrar = true;
+                                  getProductos(idVendedor);
+                                });
+                              },
+                            );
+                          },
                         ),
+                        /////////////////////////77
                         SizedBox(
                           height: 10,
                         ),
-                        Container(child: Text('Producto')),
-                        AutocompleteVendedor(
-                          vendedoresLista: vendedors,
+                        (mostrar != true)
+                            ? Container()
+                            : DropDownFormField(
+                                hintText: 'Selecciona un producto',
+                                contentPadding: const EdgeInsets.all(0),
+                                filled: false,
+                                titleText: 'Nombre del producto',
+                                value: idProducto,
+                                onSaved: (value) {
+                                  setState(() {
+                                    idProducto = value;
+                                    print(idProducto);
+                                  });
+                                },
+                                onChanged: (value) {
+                                  setState(() {
+                                    idProducto = value;
+                                    print(idProducto);
+                                    // productModel.subcategoria_id = value;
+                                  });
+                                },
+                                dataSource: productsForm,
+                                textField: 'nombre',
+                                valueField: 'producto_id',
+                              ),
+                        const SizedBox(
+                          height: 30,
                         ),
                         SizedBox(
                           height: 10,
@@ -354,7 +516,9 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                               ))),
                               onPressed: () async {
                                 await pickImage();
-                                setState(() {});
+                                setState(() {
+                                  imagenCargada = true;
+                                });
                               },
                               child: Center(
                                 child: Container(
@@ -381,7 +545,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ))),
                               onPressed: () {
-                                Navigator.pop(context);
+                                postAnuncio();
                               },
                               child: Center(
                                 child: Container(
@@ -417,6 +581,32 @@ class AutocompleteVendedor extends StatelessWidget {
           return const Iterable<String>.empty();
         }
         return this.vendedoresLista.where((String option) {
+          return option.contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) {
+        debugPrint('You just selected $selection');
+        String hola = selection;
+        print('hola $hola');
+        return hola;
+      },
+    );
+  }
+}
+
+class AutocompleteProductos extends StatelessWidget {
+  final List<String> productosLista;
+
+  const AutocompleteProductos({this.productosLista});
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text == '') {
+          return const Iterable<String>.empty();
+        }
+        return this.productosLista.where((String option) {
           return option.contains(textEditingValue.text.toLowerCase());
         });
       },

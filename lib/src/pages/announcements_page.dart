@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
@@ -259,12 +261,12 @@ const kTableColumns = <DataColumn>[
       style: TextStyle(fontWeight: FontWeight.w900),
     ),
   ),
-//  DataColumn(
-//    label: Text(
-//      'Editar',
-//      style: TextStyle(fontWeight: FontWeight.w900),
-//    ),
-//  ),
+  DataColumn(
+    label: Text(
+      'Eliminar',
+      style: TextStyle(fontWeight: FontWeight.w900),
+    ),
+  ),
 ];
 
 class AnunciosDataSourceTable extends DataTableSource {
@@ -276,6 +278,32 @@ class AnunciosDataSourceTable extends DataTableSource {
         assert(dataAnuncios != null);
 
   int _selectedCount = 0;
+
+  postEliminarAnuncio(idAnuncio) async {
+    VerdeService verdeService = VerdeService();
+
+    var jsonBody = {
+      "anuncio_id": idAnuncio,
+    };
+    await verdeService
+        .postTokenService(jsonBody, 'editar/anuncio', sharedPrefs.clientToken)
+        .then((serverResp) {
+      print(jsonBody);
+      var respResponse = jsonDecode(serverResp['response']);
+      // dialog(false, context, respResponse['message'].toString());
+      if (serverResp['status'] == 'server_true') {
+        Navigator.pushAndRemoveUntil(
+            _context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    HomePage(rutaSeleccionada: AnnouncementsPage())),
+            (route) => false);
+        dialog(true, _context, respResponse['message'].toString());
+      } else {
+        dialog(false, _context, respResponse['message'].toString());
+      }
+    });
+  }
 
   @override
   DataRow getRow(int index) {
@@ -335,29 +363,30 @@ class AnunciosDataSourceTable extends DataTableSource {
                 )),
           )),
 
-//          DataCell(Container(
-//            color: Color(0xFF70BB68),
-//            width: 92,
-//            height: 32,
-//            child: TextButton(
-//                style: ButtonStyle(
-//                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-//                        RoundedRectangleBorder(
-//                  borderRadius: BorderRadius.circular(18.0),
-//                ))),
-//                onPressed: () {
-//                  _dialogCall(_context, _anuncio.anuncio_id);
-//                },
-//                child: Center(
-//                  child: Container(
-//                    child: Text('Editar',
-//                        style: TextStyle(
-//                            color: Colors.white,
-//                            fontSize: 13,
-//                            fontWeight: FontWeight.bold)),
-//                  ),
-//                )),
-//          )),
+          DataCell(Container(
+            color: Colors.red,
+            width: 92,
+            height: 32,
+            child: TextButton(
+                style: ButtonStyle(
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                ))),
+                onPressed: () {
+                  // _dialogCall(_context, _anuncio.anuncio_id);
+                  postEliminarAnuncio(_anuncio.anuncio_id);
+                },
+                child: Center(
+                  child: Container(
+                    child: Text('Eliminar',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                )),
+          )),
 
           //DataCell(Text('$_anuncio.')),
         ]);
@@ -413,6 +442,8 @@ class _DetallesDialogState extends State<DetallesDialog> {
   Image image;
   Image pickedImage;
   var base64image;
+  var imagesBody;
+  bool imagenCargada;
 
   //Fechas
   bool fechasAgregadas = false;
@@ -424,6 +455,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
 
   @override
   void initState() {
+    imagenCargada = false;
     activarDatePicker = false;
     loadInfo = false;
     getAnuncioDetalles();
@@ -496,20 +528,67 @@ class _DetallesDialogState extends State<DetallesDialog> {
     );
   }
 
+//  Future<void> getImages64Array() async {
+//    Uint8List byteData = await File(mediaData).readAsBytes();
+//    setState(() {
+//      imagesBody.add({
+//        "nombre_archivo": mediaData,
+//        "img_url": base64Encode(byteData.buffer.asUint8List())
+//      });
+//    });
+//  }
+//
   postEditAnuncio(idAnuncio) async {
     VerdeService verdeService = VerdeService();
 
     var jsonBody = {
-      "imagen": mediaData == null ? null : base64Encode(mediaData.data),
       "anuncio_id": idAnuncio,
-      "fechas": listaFechas,
+      "imagenes": [
+        {
+          "nombre_archivo": mediaData == null ? null : mediaData.fileName,
+          "img_url": mediaData == null ? null : base64Encode(mediaData.data)
+        }
+      ],
+      "fechas": (fechasAgregadas == false)
+          ? anunciosDetalles['fechasActivas']
+          : listaFechas,
     };
 
-    //print(jsonBody);
+    print(jsonBody['imagen']);
+    print(jsonBody['anuncio_id']);
+    print(jsonBody['fechas']);
 
     await verdeService
         .postTokenService(jsonBody, 'editar/anuncio', sharedPrefs.clientToken)
         .then((serverResp) {
+      print(jsonBody);
+      var respResponse = jsonDecode(serverResp['response']);
+      // dialog(false, context, respResponse['message'].toString());
+      if (serverResp['status'] == 'server_true') {
+        setState(() {
+          editP = false;
+        });
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    HomePage(rutaSeleccionada: AnnouncementsPage())),
+            (route) => false);
+        dialog(true, context, respResponse['message'].toString());
+      } else {
+        dialog(false, context, respResponse['message'].toString());
+      }
+    });
+  }
+
+  postEliminarAnuncio(idAnuncio) async {
+    var jsonBody = {
+      "anuncio_id": idAnuncio,
+    };
+    await verdeService
+        .postTokenService(jsonBody, 'editar/anuncio', sharedPrefs.clientToken)
+        .then((serverResp) {
+      print(jsonBody);
       var respResponse = jsonDecode(serverResp['response']);
       // dialog(false, context, respResponse['message'].toString());
       if (serverResp['status'] == 'server_true') {
@@ -734,7 +813,9 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                       mainText: 'Seleccionar foto',
                                       pressed: () async {
                                         await pickImage();
-                                        setState(() {});
+                                        setState(() {
+                                          imagenCargada = true;
+                                        });
                                       }),
                                 ),
                               ),
@@ -758,8 +839,15 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                   : ButtonPrimary(
                                       mainText: 'Guardar',
                                       pressed: () {
-                                        postEditAnuncio(
-                                            widget.infoAnuncio.anuncio_id);
+                                        if (imagenCargada = true) {
+                                          postEditAnuncio(
+                                              widget.infoAnuncio.anuncio_id);
+                                        }
+                                        if (listaFechas.length >
+                                            cantidadFechasEditables) {
+                                          postEditAnuncio(
+                                              widget.infoAnuncio.anuncio_id);
+                                        }
 
                                         if (listaFechas.length >
                                             cantidadFechasEditables) {
@@ -795,7 +883,8 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                         }
 
                                         if (listaFechas.length <
-                                            cantidadFechasEditables) {
+                                                cantidadFechasEditables &&
+                                            fechasAgregadas == true) {
                                           showDialog(
                                               context: context,
                                               builder: (BuildContext context) {
