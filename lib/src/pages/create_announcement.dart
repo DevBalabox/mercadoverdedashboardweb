@@ -60,7 +60,7 @@ class UsuariosVendedor {
 
   @override
   String toString() {
-    return '$nombre, $primer_apellido , $segundo_apellido, $segundo_apellido, $correo, $telefono, $ubicacion, $img_url, $usuario_id, $created_at, $updated_at, $deleted_a';
+    return '${nombre.trim()}, ${primer_apellido.trim()}, ${segundo_apellido.trim()}, $correo, $telefono';
   }
 
   @override
@@ -126,7 +126,10 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   String idVendedor;
   bool mostrar;
   String idProducto;
-  bool imagenCargada = false;
+  bool imagenCargada;
+  bool fechasAgregadas;
+  bool vendedorAgregado;
+  bool productoAgregado;
   var imagesBody;
 
 //Variables Imagenes
@@ -179,6 +182,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
         lastDate: DateTime(2100),
         dateLabelText: 'Fecha',
         onChanged: (val) {
+          fechasAgregadas = true;
           print(val);
           listaFechas.add(val);
           print(listaFechas);
@@ -251,9 +255,9 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                     HomePage(rutaSeleccionada: AnnouncementsPage())),
             (route) => false);
         print(respResponse[0]);
-        dialog(true, context, respResponse.toString());
+        dialog(true, context, respResponse['message'].toString());
       } else {
-        dialog(false, context, respResponse.toString());
+        dialog(false, context, respResponse['message'].toString());
       }
     });
   }
@@ -262,12 +266,21 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   void initState() {
     print(sharedPrefs.clientToken.toString());
     mostrar = false;
+    imagenCargada = false;
+    fechasAgregadas = false;
+    vendedorAgregado = false;
+    productoAgregado = false;
     getUser().then((value) {
       for (var i = 0; i < jsonVendedor.length; i++) {
         // print(jsonVendedor[i]['nombre'].toString());
         // print('----------------');
         vendedorData.add(UsuariosVendedor(
-            jsonVendedor[i]['nombre'].toString(),
+            (jsonVendedor[i]['nombre'].toString() +
+                    ' ' +
+                    jsonVendedor[i]['primer_apellido'].toString() +
+                    ' ' +
+                    jsonVendedor[i]['segundo_apellido'].toString())
+                .toString(),
             jsonVendedor[i]['primer_apellido'].toString(),
             jsonVendedor[i]['segundo_apellido'].toString(),
             jsonVendedor[i]['correo'].toString(),
@@ -279,10 +292,8 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
             jsonVendedor[i]['updated_at'].toString(),
             jsonVendedor[i]['deleted_at']));
 
-        vendedors.add((jsonVendedor[i]['nombre']).toString());
+//        vendedors.add((jsonVendedor[i]['nombre']).toString());
       }
-      print(vendedorData[1].nombre);
-      //String _displayStringForOption(Partner option) => option.nombre;
       setState(() {
         loadInfo = false;
       });
@@ -442,10 +453,6 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                           height: 30,
                         ),
                         Container(child: Text('Nombre Vendedor')),
-//                        AutocompleteVendedor(
-//                          vendedoresLista: vendedors,
-//                        ),
-                        ///////////////////////////////////7
                         StatefulBuilder(
                           builder: (BuildContext context, setState) {
                             String _displayStringForOption(
@@ -464,8 +471,11 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                 return this
                                     .vendedorData
                                     .where((UsuariosVendedor option) {
-                                  return option.toString().contains(
-                                      textEditingValue.text.toLowerCase());
+                                  return option
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(
+                                          textEditingValue.text.toLowerCase());
                                 });
                               },
                               onSelected: (UsuariosVendedor selection) {
@@ -474,11 +484,24 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                 debugPrint(
                                     'You just selected ${_displayStringForOption(selection)}');
 
-                                print(selection.usuario_id.toString());
-                                print(selection.usuario_id);
+                                print('selection.nombre');
+                                print(selection.nombre);
+                                print('selection.primer_apellido');
+                                print(selection.primer_apellido);
+                                print('selection.segundo_apellido');
+                                print(selection.segundo_apellido);
+                                print('selection.correo');
+                                print(selection.correo);
+                                print('selection.telefono');
+                                print(selection.telefono);
+                                print('selection.ubicacion');
+                                print(selection.ubicacion);
+
                                 setState(() {
+                                  productsForm.clear();
                                   idVendedor = selection.usuario_id;
                                   mostrar = true;
+                                  vendedorAgregado = true;
                                   getProductos(idVendedor);
                                 });
                               },
@@ -505,6 +528,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                 },
                                 onChanged: (value) {
                                   setState(() {
+                                    productoAgregado = true;
                                     idProducto = value;
                                     print(idProducto);
                                     // productModel.subcategoria_id = value;
@@ -528,46 +552,52 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                   image: MemoryImage(mediaData.data),
                                   fit: BoxFit.fitHeight,
                                 )))
-                            : DottedBorder(
-                                color: Colors.black,
-                                strokeWidth: 1,
-                                child: Container(
-                                  child: Stack(
-                                    alignment: AlignmentDirectional.center,
-                                    //mainAxisAlignment: MainAxisAlignment.center,
-                                    //crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      Container(
-                                          height: 250,
-                                          color: Color(0XFFFDFDFD)),
-                                      Column(
-                                        children: [
-                                          Text(
-                                              'Sube una imagen para tu anuncio',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Color(0xFF515151))),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text('Png y Jpg Horizontal',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Color(0xFF979797))),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Center(
-                                            child: Icon(Icons.photo_library,
-                                                size: 35,
-                                                color: Colors.black
-                                                    .withOpacity(0.5)),
+                            : Column(
+                                children: [
+                                  DottedBorder(
+                                    color: Colors.black,
+                                    strokeWidth: 1,
+                                    child: Container(
+                                      child: Stack(
+                                        alignment: AlignmentDirectional.center,
+                                        //mainAxisAlignment: MainAxisAlignment.center,
+                                        //crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Container(
+                                              height: 250,
+                                              color: Color(0XFFFDFDFD)),
+                                          Column(
+                                            children: [
+                                              Text(
+                                                  'Sube una imagen para tu anuncio',
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      color:
+                                                          Color(0xFF515151))),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text('Png y Jpg Horizontal',
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      color:
+                                                          Color(0xFF979797))),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Center(
+                                                child: Icon(Icons.photo_library,
+                                                    size: 35,
+                                                    color: Colors.black
+                                                        .withOpacity(0.5)),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                         SizedBox(
                           height: 30,
@@ -614,7 +644,30 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ))),
                               onPressed: () {
-                                postAnuncio();
+                                if (imagenCargada == true &&
+                                    fechasAgregadas == true &&
+                                    vendedorAgregado == true &&
+                                    productoAgregado == true) {
+                                  postAnuncio();
+                                }
+
+                                if (imagenCargada == false) {
+                                  dialog(false, context,
+                                      'No has agregado una imagen');
+                                }
+
+                                if (fechasAgregadas == false) {
+                                  dialog(false, context,
+                                      'No has agregado una fecha');
+                                }
+                                if (vendedorAgregado == false) {
+                                  dialog(false, context,
+                                      'No has agregado un vendedor');
+                                }
+                                if (productoAgregado == false) {
+                                  dialog(false, context,
+                                      'No has agregado un producto');
+                                }
                               },
                               child: Center(
                                 child: Container(
