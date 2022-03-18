@@ -77,7 +77,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
         var respAnuncios = jsonDecode(serverResp['response']);
         //anuncios = respAnuncios[1];
         print(respAnuncios[1][0]);
-        print(respAnuncios[1][1]);
+        //print(respAnuncios[1][1]);
 
         setState(() {
           loadinfo = false;
@@ -94,7 +94,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
             ));
           }
           print('anuncios');
-          print(anuncios[1]);
+          //print(anuncios[1]);
         });
       }
     });
@@ -124,7 +124,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
   @override
   Widget build(BuildContext context) {
     int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
-    return loadinfo
+    return /* loadinfo
         ? Center(
             child: CircularProgressIndicator(
                 //backgroundColor: primaryGreen,
@@ -156,82 +156,81 @@ class _AnnouncementsPageState extends State<AnnouncementsPage>
                   ],
                 ),
               )
-            : ListView(children: [
-                SingleChildScrollView(
-                  //child: Text('aquí va la tabla'),
-                  child: PaginatedDataTable(
-                    header: Row(
-                      // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MediaQuery.of(context).size.width < 700
-                            ? Container()
-                            : Expanded(
-                                flex: 1,
-                                child: Text(
-                                  'ANUNCIOS',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: primaryGreen,
-                                      fontSize: 25),
-                                ),
-                              ),
-                        Container(
-                            child: Tooltip(
-                          message: 'Agregar nuevo anuncio',
-                          child: Container(
-                            padding: EdgeInsets.all(0),
-                            decoration: BoxDecoration(
-                                color: primaryGreen,
-                                borderRadius: BorderRadius.circular(50)),
-                            child: IconButton(
-                                onPressed: () {
+            :  */
+        ListView(children: [
+      SingleChildScrollView(
+        //child: Text('aquí va la tabla'),
+        child: PaginatedDataTable(
+          header: Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MediaQuery.of(context).size.width < 700
+                  ? Container()
+                  : Expanded(
+                      flex: 1,
+                      child: Text(
+                        'ANUNCIOS',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: primaryGreen,
+                            fontSize: 25),
+                      ),
+                    ),
+              Container(
+                  child: Tooltip(
+                message: 'Agregar nuevo anuncio',
+                child: Container(
+                  padding: EdgeInsets.all(0),
+                  decoration: BoxDecoration(
+                      color: primaryGreen,
+                      borderRadius: BorderRadius.circular(50)),
+                  child: IconButton(
+                      onPressed: () {
 //                                  MaterialPageRoute(
 //                                      builder: (context) =>
 //                                          CreateAnnouncement());
 
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              CreateAnnouncement()));
-                                },
-                                icon: Icon(Icons.add, color: Colors.white)),
-                          ),
-                        )),
-                        SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          flex: 4,
-                          child: RoundTextField(
-                            hintText: 'Búscar...',
-                            colorhintText: textGrey,
-                            colorText: textGrey,
-                            colorIcon: primaryGreen,
-                            mainColor: Colors.white,
-                            maxLines: 1,
-                            enabled: true,
-                            onSaved: (value) {},
-                            inputType: 'generic',
-                            textCapitalization: TextCapitalization.sentences,
-                            icon: Icons.search,
-                            onChanged: (value) => searchOperation(value),
-                          ),
-                        ),
-                      ],
-                    ),
-                    showCheckboxColumn: false,
-                    columns: kTableColumns,
-                    source: AnunciosDataSourceTable(
-                      dataAnuncios:
-                          searchList.length == 0 ? anuncios : searchList,
-                      mycontext: context,
-                    ),
-                  ),
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CreateAnnouncement()));
+                      },
+                      icon: Icon(Icons.add, color: Colors.white)),
                 ),
-              ]);
+              )),
+              SizedBox(
+                width: 30,
+              ),
+              Expanded(
+                flex: 4,
+                child: RoundTextField(
+                  hintText: 'Búscar...',
+                  colorhintText: textGrey,
+                  colorText: textGrey,
+                  colorIcon: primaryGreen,
+                  mainColor: Colors.white,
+                  maxLines: 1,
+                  enabled: true,
+                  onSaved: (value) {},
+                  inputType: 'generic',
+                  textCapitalization: TextCapitalization.sentences,
+                  icon: Icons.search,
+                  onChanged: (value) => searchOperation(value),
+                ),
+              ),
+            ],
+          ),
+          showCheckboxColumn: false,
+          columns: kTableColumns,
+          source: AnunciosDataSourceTable(
+            dataAnuncios: searchList.length == 0 ? anuncios : searchList,
+            mycontext: context,
+          ),
+        ),
+      ),
+    ]);
   }
 }
 
@@ -308,8 +307,8 @@ class AnunciosDataSourceTable extends DataTableSource {
   @override
   DataRow getRow(int index) {
     // TODO: implement getRow
-
     assert(index >= 0);
+
     if (index >= _anunciosData.length) {
       return null;
     }
@@ -652,8 +651,8 @@ class _DetallesDialogState extends State<DetallesDialog> {
                         Form(
                           //key: _formKey,
                           child: SimpleTextField(
-                              labelText: 'Nombre',
-                              initValue: widget.infoAnuncio.nombre_producto,
+                              labelText: 'Nombre del vendedor/tienda',
+                              initValue: widget.infoAnuncio.nombre_vendedor,
                               inputType: 'generic',
                               enabled: false,
                               onSaved: (value) =>
@@ -665,7 +664,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
                           child: Form(
                             //key: _formKey,
                             child: SimpleTextField(
-                                labelText: 'Nombre del vendedor/tienda',
+                                labelText: 'Nombre del producto',
                                 initValue: anunciosDetalles['nombre'],
                                 inputType: 'generic',
                                 enabled: editP,

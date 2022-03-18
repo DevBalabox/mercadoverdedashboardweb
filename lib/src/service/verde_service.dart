@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' show Client;
 
-String urlApi = 'https://dev.merkadoverdeapp.com/';
+String urlApi = 'https://api.merkadoverdeapp.com/';
 String urlApiMock =
     'https://stoplight.io/mocks/balabox-alquilacadiz/merkadoverde/40225097/';
 
