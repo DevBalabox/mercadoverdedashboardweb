@@ -125,7 +125,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
               widget.inputType == 'card_number'
           ? [
               // DecimalTextInputFormatter(),
-              WhitelistingTextInputFormatter(RegExp("[0-9 .]"))
+              FilteringTextInputFormatter(RegExp("[0-9 .]"), allow: true)
             ]
           : null,
       // onFieldSubmitted: widget.onFieldSubmitted,
@@ -427,7 +427,7 @@ class _RoundTextFieldState extends State<RoundTextField> {
               widget.inputType == 'card_number'
           ? [
               // DecimalTextInputFormatter(),
-              WhitelistingTextInputFormatter(RegExp("[0-9 .]"))
+              FilteringTextInputFormatter(RegExp("[0-9 .]"), allow: true)
             ]
           : null,
       // onFieldSubmitted: widget.onFieldSubmitted,
@@ -645,7 +645,7 @@ class _BorderTextFieldState extends State<BorderTextField> {
               widget.inputType == 'card_number'
           ? [
               // DecimalTextInputFormatter(),
-              WhitelistingTextInputFormatter(RegExp("[0-9 .]"))
+              FilteringTextInputFormatter(RegExp("[0-9 .]"), allow: true)
             ]
           : null,
       // onFieldSubmitted: widget.onFieldSubmitted,

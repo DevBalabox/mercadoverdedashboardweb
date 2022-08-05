@@ -64,6 +64,7 @@ class _ServiceState extends State<ServicePage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    print("We're in services page");
     animationController =
         AnimationController(duration: new Duration(seconds: 2), vsync: this);
     animationController.repeat();
@@ -78,7 +79,7 @@ class _ServiceState extends State<ServicePage> with TickerProviderStateMixin {
           jsonService[i]['ubicacion'],
           jsonService[i]['telefono_contacto'],
           jsonService[i]['email_contacto'],
-          jsonService[i]['imagenes'],
+          jsonService[i]['imagenes'] ?? [],
           jsonService[i]['status'],
           jsonService[i]['created_at'],
           jsonService[i]['updated_at'],

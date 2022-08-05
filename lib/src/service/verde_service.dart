@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:http/http.dart' show Client;
 
-String urlApi = 'https://api.merkadoverdeapp.com/';
+bool isSandbox = true;
+String urlApi = isSandbox
+    ? 'https://dev.merkadoverdeapp.com/'
+    : 'https://api.merkadoverdeapp.com/';
 String urlApiMock =
     'https://stoplight.io/mocks/balabox-alquilacadiz/merkadoverde/40225097/';
 

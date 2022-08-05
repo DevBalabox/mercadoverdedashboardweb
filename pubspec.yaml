@@ -36,8 +36,8 @@ dependencies:
   flutter_swiper: ^1.1.6
   get: ^3.24.0
   oktoast: ^2.3.2
-  jiffy: ^3.0.1
-  date_time_picker: ^1.1.1
+  jiffy: ^5.0.0
+  date_time_picker: ^2.1.0
   dotted_border: ^2.0.0+2
   font_awesome_flutter: ^8.12.0
 

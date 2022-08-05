@@ -304,6 +304,7 @@ class _CreateAnnouncementState extends State<CreateAnnouncement> {
   }
 
   getProductos(idUsuario) async {
+    print("Getting products");
     sharedPrefs.init();
     await verdeService
         .getService(

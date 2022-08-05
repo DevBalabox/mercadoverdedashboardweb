@@ -432,7 +432,7 @@ class DetallesDialog extends StatefulWidget {
 class _DetallesDialogState extends State<DetallesDialog> {
   VerdeService verdeService = VerdeService();
   var anunciosDetalles;
-  bool editP = false;
+  bool editP = true;
 
   bool loadInfo;
   String nombreAnuncio;
@@ -667,7 +667,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                 labelText: 'Nombre del producto',
                                 initValue: anunciosDetalles['nombre'],
                                 inputType: 'generic',
-                                enabled: editP,
+                                enabled: false,
                                 onSaved: (value) =>
                                     {}, //(value) => nombrecat = value,
                                 textCapitalization:
@@ -838,17 +838,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                       : Container()
                                   : ButtonPrimary(
                                       mainText: 'Guardar',
-                                      pressed: () {
-                                        if (imagenCargada = true) {
-                                          postEditAnuncio(
-                                              widget.infoAnuncio.anuncio_id);
-                                        }
-                                        if (listaFechas.length >
-                                            cantidadFechasEditables) {
-                                          postEditAnuncio(
-                                              widget.infoAnuncio.anuncio_id);
-                                        }
-
+                                      pressed: () {                                      
                                         if (listaFechas.length >
                                             cantidadFechasEditables) {
                                           showDialog(
@@ -880,6 +870,7 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                                   ],
                                                 );
                                               });
+                                              return;
                                         }
 
                                         if (listaFechas.length <
@@ -914,6 +905,17 @@ class _DetallesDialogState extends State<DetallesDialog> {
                                                   ],
                                                 );
                                               });
+                                              return;
+                                        }
+
+                                        if (imagenCargada = true) {
+                                          postEditAnuncio(
+                                              widget.infoAnuncio.anuncio_id);
+                                        }
+                                        if (listaFechas.length >
+                                            cantidadFechasEditables) {
+                                          postEditAnuncio(
+                                              widget.infoAnuncio.anuncio_id);
                                         }
                                       },
                                     ),
