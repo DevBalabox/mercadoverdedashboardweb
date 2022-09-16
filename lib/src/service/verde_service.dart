@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' show Client;
 
-bool isSandbox = true;
+bool isSandbox = false;
 String urlApi = isSandbox
     ? 'https://dev.merkadoverdeapp.com/'
     : 'https://api.merkadoverdeapp.com/';

@@ -98,7 +98,7 @@ class _ServiceState extends State<ServicePage> with TickerProviderStateMixin {
     sharedPrefs.init();
     print(sharedPrefs.clientToken);
     await verdeService
-        .getService(adminModel, 'servicios', sharedPrefs.clientToken)
+        .getService(adminModel, 'servicios/admin?status=todos', sharedPrefs.clientToken)
         .then((serverResp) {
       if (serverResp['status'] == 'server_true') {
         var respResponse = jsonDecode(serverResp['response']);

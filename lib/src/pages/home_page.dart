@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:web_verde/model/admin_model.dart';
 import 'package:web_verde/src/pages/announcements_page.dart';
 import 'package:web_verde/src/pages/category_page.dart';
@@ -116,14 +117,44 @@ class _HomePageState extends State<HomePage> {
                     //     padding: const EdgeInsets.all(8.0),
                     //     child: Text(pageTitle.toUpperCase())),
 
-                    InkWell(
-                        onTap: () => _displayDialog(context),
-                        child: Text(
-                          'Bienvenido, administrador',
-                          style: TextStyle(
-                              decoration: TextDecoration.underline,
-                              fontSize: 17),
-                        )),
+                    Row(
+                      children: [
+                        InkWell(
+                            onTap: () => _displayDialog(context),
+                            child: Text(
+                              'Bienvenido, administrador',
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  fontSize: 17),
+                            )),
+                        SizedBox(width: 10,),
+                        InkWell(
+                            onTap: () {
+                              launch(urlApi +
+                                  "csv/usuarios?tkn=" +
+                                  sharedPrefs.clientToken);
+                            },
+                            child: Text(
+                              'Descargar Usuarios (CSV)',
+                              style: TextStyle(
+                                  
+                                  fontSize: 15),
+                            )),
+                            SizedBox(width: 10,),
+                        InkWell(
+                            onTap: () {
+                              launch(urlApi +
+                                  "csv/productos?tkn=" +
+                                  sharedPrefs.clientToken);
+                            },
+                            child: Text(
+                              'Descargar Productos (CSV)',
+                              style: TextStyle(
+                                  
+                                  fontSize: 15),
+                            )),
+                      ],
+                    ),
 
                     Align(
                       alignment: Alignment.center,
